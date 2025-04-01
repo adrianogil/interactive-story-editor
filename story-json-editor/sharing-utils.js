@@ -3,14 +3,21 @@
 class SharingUtils {
     // Convert JSON to base64 string
     static jsonToBase64(json) {
-        if (typeof json === 'object') {
-            json = JSON.stringify(json);
+        try {
+            if (typeof json === 'object') {
+                json = JSON.stringify(json);
+            }
+            return btoa(encodeURIComponent(json));
+        } catch (error) {
+            console.error('Error converting JSON to base64:', error);
+            return null;
         }
-        return btoa(encodeURIComponent(json));
     }
 
     // Convert base64 to JSON
     static base64ToJson(base64Str) {
+        if (!base64Str) return null;
+
         try {
             // Decode from base64 and parse as JSON
             return JSON.parse(decodeURIComponent(atob(base64Str)));
@@ -24,35 +31,53 @@ class SharingUtils {
     static generateShareableUrl(storyData) {
         if (!storyData) return null;
 
-        // Convert story data to base64
-        const storyBase64 = this.jsonToBase64(storyData);
+        try {
+            // Convert story data to base64
+            const storyBase64 = this.jsonToBase64(storyData);
+            if (!storyBase64) return null;
 
-        // Create URL
-        const url = new URL(window.location.href);
-        url.search = ''; // Clear existing query parameters
-        url.searchParams.set('story', storyBase64);
+            // Create URL
+            const url = new URL(window.location.href);
+            url.search = ''; // Clear existing query parameters
+            url.searchParams.set('story', storyBase64);
 
-        return url.toString();
+            return url.toString();
+        } catch (error) {
+            console.error('Error generating shareable URL:', error);
+            return null;
+        }
     }
 
     // Extract story data from URL
     static extractStoryFromUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const storyParam = urlParams.get('story');
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const storyParam = urlParams.get('story');
 
-        if (storyParam) {
-            try {
+            if (storyParam) {
                 return this.base64ToJson(storyParam);
-            } catch (error) {
-                console.error('Error extracting story from URL:', error);
-                return null;
             }
+            return null;
+        } catch (error) {
+            console.error('Error extracting story from URL:', error);
+            return null;
         }
-        return null;
+    }
+
+    // Generate a compressed version of the story data
+    static compressStoryData(storyData) {
+        // This could be extended later to implement actual compression
+        // or to strip unnecessary data for sharing
+        return storyData;
     }
 
     // Copy text to clipboard (using modern Clipboard API with fallback)
     static async copyToClipboard(text, callback) {
+        if (!text) {
+            console.error('No text to copy');
+            return false;
+        }
+
         try {
             // Try to use modern Clipboard API first
             if (navigator.clipboard && navigator.clipboard.writeText) {

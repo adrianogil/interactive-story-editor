@@ -1,213 +1,187 @@
-// ui-controller.js - UI interactions and DOM manipulation
+class UIController {
+    constructor(elements, storyEngine) {
+        this.elements = elements;
+        this.storyEngine = storyEngine;
+        this.setupUIEventListeners();
+    }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
-    const elements = {
-        inputSection: document.getElementById('input-section'),
-        jsonInput: document.getElementById('json-input'),
-        loadButton: document.getElementById('load-button'),
-        toggleButton: document.getElementById('toggle-input'),
-        errorMessage: document.getElementById('error-message'),
-        storyContainer: document.getElementById('story-container'),
-        storyTitle: document.getElementById('story-title'),
-        storyContent: document.getElementById('story-content'),
-        choicesContainer: document.getElementById('choices-container'),
-        shareButton: document.getElementById('share-button'),
-        shareUrlContainer: document.getElementById('share-url-container'),
-        shareUrl: document.getElementById('share-url'),
-        copyUrlButton: document.getElementById('copy-url-button'),
-        resetButton: document.getElementById('reset-button')
-    };
+    setupUIEventListeners() {
+        // Toggle input section
+        this.elements.toggleButton.addEventListener('click', () => this.toggleInputSection());
 
-    // Initialize StoryEngine
-    const storyEngine = new StoryEngine();
+        // Make the header clickable to toggle as well
+        this.elements.inputSection.querySelector('.header-row').addEventListener('click', () =>
+            this.toggleInputSection()
+        );
 
-    // Set up event listeners for StoryEngine events
-    storyEngine
-        .on('passageChanged', passage => uiController.renderPassage(passage))
-        .on('error', errorMessage => uiController.showError(errorMessage))
-        .on('storyLoaded', () => {
-            // Hide error message
-            uiController.hideError();
+        // Load story button
+        this.elements.loadButton.addEventListener('click', () => this.loadStoryFromInput());
 
-            // Show story container
-            elements.storyContainer.style.display = 'block';
+        // Share button
+        this.elements.shareButton.addEventListener('click', () => this.handleShareClick());
 
-            // Update story title
-            elements.storyTitle.textContent = storyEngine.getStoryTitle();
+        // Copy URL button
+        this.elements.copyUrlButton.addEventListener('click', () => this.handleCopyUrlClick());
 
-            // Collapse input section to focus on story
-            elements.inputSection.classList.add('collapsed');
-            uiController.updateToggleIcons();
+        // Reset button
+        this.elements.resetButton.addEventListener('click', () => this.storyEngine.resetToStart());
+    }
 
-            // Scroll to story section
-            document.getElementById('story-section').scrollIntoView({ behavior: 'smooth' });
+    // Toggle input section visibility
+    toggleInputSection() {
+        this.elements.inputSection.classList.toggle('collapsed');
+        this.updateToggleIcons();
+    }
+
+    // Collapse input section
+    collapseInputSection() {
+        this.elements.inputSection.classList.add('collapsed');
+        this.updateToggleIcons();
+    }
+
+    // Update all toggle icons to match collapsed state
+    updateToggleIcons() {
+        const isCollapsed = this.elements.inputSection.classList.contains('collapsed');
+        const icons = this.elements.inputSection.querySelectorAll('.toggle-icon');
+        icons.forEach(icon => {
+            icon.textContent = isCollapsed ? '►' : '▼';
         });
+    }
 
-    // UI Controller functions
-    const uiController = {
-        // Toggle input section visibility
-        toggleInputSection: function() {
-            elements.inputSection.classList.toggle('collapsed');
-            this.updateToggleIcons();
-        },
+    // Show story container
+    showStoryContainer() {
+        this.elements.storyContainer.style.display = 'block';
+    }
 
-        // Update all toggle icons to match collapsed state
-        updateToggleIcons: function() {
-            const isCollapsed = elements.inputSection.classList.contains('collapsed');
-            const icons = elements.inputSection.querySelectorAll('.toggle-icon');
-            icons.forEach(icon => {
-                icon.textContent = isCollapsed ? '►' : '▼';
-            });
-        },
+    // Update story title
+    updateStoryTitle(title) {
+        this.elements.storyTitle.textContent = title;
+    }
 
-        // Display error message
-        showError: function(message) {
-            elements.errorMessage.textContent = message;
-            elements.errorMessage.style.display = 'block';
-            elements.storyContainer.style.display = 'none';
+    // Display error message
+    showError(message) {
+        this.elements.errorMessage.textContent = message;
+        this.elements.errorMessage.style.display = 'block';
+        this.elements.storyContainer.style.display = 'none';
 
-            // Expand input section to show the error
-            elements.inputSection.classList.remove('collapsed');
-            this.updateToggleIcons();
-        },
+        // Expand input section to show the error
+        this.elements.inputSection.classList.remove('collapsed');
+        this.updateToggleIcons();
+    }
 
-        // Hide error message
-        hideError: function() {
-            elements.errorMessage.textContent = '';
-            elements.errorMessage.style.display = 'none';
-        },
+    // Hide error message
+    hideError() {
+        this.elements.errorMessage.textContent = '';
+        this.elements.errorMessage.style.display = 'none';
+    }
 
-        // Render a passage (UI specific)
-        renderPassage: function(passage) {
-            // Clear previous content
-            elements.storyContent.innerHTML = '';
-            elements.choicesContainer.innerHTML = '';
+    // Render a passage (UI specific)
+    renderPassage(passage) {
+        // Clear previous content
+        this.elements.storyContent.innerHTML = '';
+        this.elements.choicesContainer.innerHTML = '';
 
-            // Hide share URL if visible
-            elements.shareUrlContainer.style.display = 'none';
+        // Hide share URL if visible
+        this.elements.shareUrlContainer.style.display = 'none';
 
-            // Display passage content
-            passage.content.forEach(item => {
-                if (typeof item === 'string') {
-                    // Text paragraph
-                    const paragraph = document.createElement('p');
-                    paragraph.className = 'story-paragraph';
-                    paragraph.textContent = item;
-                    elements.storyContent.appendChild(paragraph);
-                } else if (item.choices) {
-                    // Choices
-                    for (const [choiceText, targetPassageName] of Object.entries(item.choices)) {
-                        const choiceButton = document.createElement('button');
-                        choiceButton.className = 'choice-button';
-                        choiceButton.textContent = choiceText;
+        // Display passage content
+        passage.content.forEach(item => {
+            if (typeof item === 'string') {
+                // Text paragraph
+                const paragraph = document.createElement('p');
+                paragraph.className = 'story-paragraph';
+                paragraph.textContent = item;
+                this.elements.storyContent.appendChild(paragraph);
+            } else if (item.choices) {
+                // Choices
+                for (const [choiceText, targetPassageName] of Object.entries(item.choices)) {
+                    const choiceButton = document.createElement('button');
+                    choiceButton.className = 'choice-button';
+                    choiceButton.textContent = choiceText;
 
-                        // Handle choice click
-                        choiceButton.addEventListener('click', () => {
-                            // Make choice using the engine
-                            if (storyEngine.makeChoice(targetPassageName)) {
-                                // Scroll choices into view smoothly
-                                setTimeout(() => {
-                                    elements.choicesContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                                }, 100);
-                            }
-                        });
+                    // Handle choice click
+                    choiceButton.addEventListener('click', () => {
+                        // Make choice using the engine
+                        if (this.storyEngine.makeChoice(targetPassageName)) {
+                            // Scroll choices into view smoothly
+                            setTimeout(() => {
+                                this.elements.choicesContainer.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'nearest'
+                                });
+                            }, 100);
+                        }
+                    });
 
-                        elements.choicesContainer.appendChild(choiceButton);
-                    }
-                }
-            });
-        },
-
-        // Try to load story from input
-        loadStoryFromInput: function() {
-            try {
-                // Parse JSON
-                const data = JSON.parse(elements.jsonInput.value);
-
-                // Load story using engine (will trigger storyLoaded event)
-                storyEngine.loadStory(data);
-            } catch (error) {
-                this.showError(error.message || 'Invalid JSON. Please check your input.');
-            }
-        },
-
-        // Handle share button click
-        handleShareClick: function() {
-            const storyData = storyEngine.getStoryData();
-
-            if (!storyData) {
-                this.showError('No story loaded to share.');
-                return;
-            }
-
-            const url = SharingUtils.generateShareableUrl(storyData);
-            if (url) {
-                elements.shareUrl.value = url;
-                elements.shareUrlContainer.style.display = 'flex';
-
-                // Select the URL text for easy copying
-                elements.shareUrl.select();
-            }
-        },
-
-        // Handle copy URL button click
-        handleCopyUrlClick: function() {
-            SharingUtils.copyToClipboard(elements.shareUrl.value, () => {
-                // Visual feedback
-                const originalText = elements.copyUrlButton.textContent;
-                elements.copyUrlButton.textContent = 'Copied!';
-                setTimeout(() => {
-                    elements.copyUrlButton.textContent = originalText;
-                }, 2000);
-            });
-        },
-
-        // Check URL for story data
-        checkUrlForStory: function() {
-            const storyData = SharingUtils.extractStoryFromUrl();
-
-            if (storyData) {
-                try {
-                    // Place story in the JSON input field
-                    elements.jsonInput.value = JSON.stringify(storyData, null, 4);
-
-                    // Load the story (will trigger appropriate events)
-                    storyEngine.loadStory(storyData);
-                } catch (error) {
-                    this.showError('Invalid story data in URL.');
+                    this.elements.choicesContainer.appendChild(choiceButton);
                 }
             }
-        },
+        });
+    }
 
-        // Initialize the sample story
-        initSampleStory: function() {
-            const sampleStory = storyEngine.getSampleStory();
-            elements.jsonInput.value = JSON.stringify(sampleStory, null, 4);
+    // Try to load story from input
+    loadStoryFromInput() {
+        try {
+            // Parse JSON
+            const data = JSON.parse(this.elements.jsonInput.value);
+
+            // Load story using engine (will trigger storyLoaded event)
+            this.storyEngine.loadStory(data);
+        } catch (error) {
+            this.showError(error.message || 'Invalid JSON. Please check your input.');
         }
-    };
+    }
 
-    // Event Listeners
-    elements.toggleButton.addEventListener('click', () => uiController.toggleInputSection());
+    // Handle share button click
+    handleShareClick() {
+        const storyData = this.storyEngine.getStoryData();
 
-    // Make the header clickable to toggle as well
-    elements.inputSection.querySelector('.header-row').addEventListener('click', () => uiController.toggleInputSection());
+        if (!storyData) {
+            this.showError('No story loaded to share.');
+            return;
+        }
 
-    // Load story button
-    elements.loadButton.addEventListener('click', () => uiController.loadStoryFromInput());
+        const url = SharingUtils.generateShareableUrl(storyData);
+        if (url) {
+            this.elements.shareUrl.value = url;
+            this.elements.shareUrlContainer.style.display = 'flex';
 
-    // Share button
-    elements.shareButton.addEventListener('click', () => uiController.handleShareClick());
+            // Select the URL text for easy copying
+            this.elements.shareUrl.select();
+        }
+    }
 
-    // Copy URL button
-    elements.copyUrlButton.addEventListener('click', () => uiController.handleCopyUrlClick());
+    // Handle copy URL button click
+    handleCopyUrlClick() {
+        SharingUtils.copyToClipboard(this.elements.shareUrl.value, () => {
+            // Visual feedback
+            const originalText = this.elements.copyUrlButton.textContent;
+            this.elements.copyUrlButton.textContent = 'Copied!';
+            setTimeout(() => {
+                this.elements.copyUrlButton.textContent = originalText;
+            }, 2000);
+        });
+    }
 
-    // Reset button
-    elements.resetButton.addEventListener('click', () => storyEngine.resetToStart());
+    // Check URL for story data
+    checkUrlForStory() {
+        const storyData = SharingUtils.extractStoryFromUrl();
 
-    // Initialize sample story in the textarea
-    uiController.initSampleStory();
+        if (storyData) {
+            try {
+                // Place story in the JSON input field
+                this.elements.jsonInput.value = JSON.stringify(storyData, null, 4);
 
-    // Check for story in URL when page loads
-    uiController.checkUrlForStory();
-});
+                // Load the story (will trigger appropriate events)
+                this.storyEngine.loadStory(storyData);
+            } catch (error) {
+                this.showError('Invalid story data in URL.');
+            }
+        }
+    }
+
+    // Initialize the sample story
+    initSampleStory(storyData) {
+        this.elements.jsonInput.value = JSON.stringify(storyData, null, 4);
+    }
+}
