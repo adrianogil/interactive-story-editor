@@ -1,9 +1,6 @@
 // ui-controller.js - UI interactions and DOM manipulation
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize StoryEngine
-    const storyEngine = new StoryEngine();
-
     // DOM Elements
     const elements = {
         inputSection: document.getElementById('input-section'),
@@ -21,6 +18,31 @@ document.addEventListener('DOMContentLoaded', function() {
         copyUrlButton: document.getElementById('copy-url-button'),
         resetButton: document.getElementById('reset-button')
     };
+
+    // Initialize StoryEngine
+    const storyEngine = new StoryEngine();
+
+    // Set up event listeners for StoryEngine events
+    storyEngine
+        .on('passageChanged', passage => uiController.renderPassage(passage))
+        .on('error', errorMessage => uiController.showError(errorMessage))
+        .on('storyLoaded', () => {
+            // Hide error message
+            uiController.hideError();
+
+            // Show story container
+            elements.storyContainer.style.display = 'block';
+
+            // Update story title
+            elements.storyTitle.textContent = storyEngine.getStoryTitle();
+
+            // Collapse input section to focus on story
+            elements.inputSection.classList.add('collapsed');
+            uiController.updateToggleIcons();
+
+            // Scroll to story section
+            document.getElementById('story-section').scrollIntoView({ behavior: 'smooth' });
+        });
 
     // UI Controller functions
     const uiController = {
@@ -56,11 +78,8 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.errorMessage.style.display = 'none';
         },
 
-        // Display a passage
-        displayPassage: function(passage) {
-            // Set story title
-            elements.storyTitle.textContent = storyEngine.getStoryTitle();
-
+        // Render a passage (UI specific)
+        renderPassage: function(passage) {
             // Clear previous content
             elements.storyContent.innerHTML = '';
             elements.choicesContainer.innerHTML = '';
@@ -85,19 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Handle choice click
                         choiceButton.addEventListener('click', () => {
-                            // Find target passage
-                            const targetPassage = storyEngine.getPassage(targetPassageName);
-
-                            if (targetPassage) {
-                                // Display target passage
-                                this.displayPassage(targetPassage);
-
+                            // Make choice using the engine
+                            if (storyEngine.makeChoice(targetPassageName)) {
                                 // Scroll choices into view smoothly
                                 setTimeout(() => {
                                     elements.choicesContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                                 }, 100);
-                            } else {
-                                this.showError(`Passage "${targetPassageName}" not found!`);
                             }
                         });
 
@@ -113,25 +125,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Parse JSON
                 const data = JSON.parse(elements.jsonInput.value);
 
-                // Load story using engine
-                const startPassage = storyEngine.loadStory(data);
-
-                // Hide error message
-                this.hideError();
-
-                // Show story container
-                elements.storyContainer.style.display = 'block';
-
-                // Collapse input section to focus on story
-                elements.inputSection.classList.add('collapsed');
-                this.updateToggleIcons();
-
-                // Display the start passage
-                this.displayPassage(startPassage);
-
-                // Scroll to story section
-                document.getElementById('story-section').scrollIntoView({ behavior: 'smooth' });
-
+                // Load story using engine (will trigger storyLoaded event)
+                storyEngine.loadStory(data);
             } catch (error) {
                 this.showError(error.message || 'Invalid JSON. Please check your input.');
             }
@@ -139,12 +134,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Handle share button click
         handleShareClick: function() {
-            if (!storyEngine.storyData) {
+            const storyData = storyEngine.getStoryData();
+
+            if (!storyData) {
                 this.showError('No story loaded to share.');
                 return;
             }
 
-            const url = SharingUtils.generateShareableUrl(storyEngine.storyData);
+            const url = SharingUtils.generateShareableUrl(storyData);
             if (url) {
                 elements.shareUrl.value = url;
                 elements.shareUrlContainer.style.display = 'flex';
@@ -175,33 +172,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Place story in the JSON input field
                     elements.jsonInput.value = JSON.stringify(storyData, null, 4);
 
-                    // Load the story
-                    const startPassage = storyEngine.loadStory(storyData);
-                    this.displayPassage(startPassage);
-                    elements.storyContainer.style.display = 'block';
+                    // Load the story (will trigger appropriate events)
+                    storyEngine.loadStory(storyData);
                 } catch (error) {
                     this.showError('Invalid story data in URL.');
                 }
-            }
-        },
-
-        // Reset story to start
-        resetStory: function() {
-            if (!storyEngine.storyData) {
-                this.showError('No story loaded to reset.');
-                return;
-            }
-
-            let startPassage = storyEngine.getPassage("Start");
-            if (!startPassage && storyEngine.storyData.passages.length > 0) {
-                startPassage = storyEngine.storyData.passages[0];
-            }
-
-            if (startPassage) {
-                this.displayPassage(startPassage);
-                document.getElementById('story-section').scrollIntoView({ behavior: 'smooth' });
-            } else {
-                this.showError('No start passage found in the story.');
             }
         },
 
@@ -228,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
     elements.copyUrlButton.addEventListener('click', () => uiController.handleCopyUrlClick());
 
     // Reset button
-    elements.resetButton.addEventListener('click', () => uiController.resetStory());
+    elements.resetButton.addEventListener('click', () => storyEngine.resetToStart());
 
     // Initialize sample story in the textarea
     uiController.initSampleStory();

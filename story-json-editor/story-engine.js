@@ -4,6 +4,22 @@ class StoryEngine {
     constructor() {
         this.storyData = null;
         this.currentPassage = null;
+        this.eventListeners = {};
+    }
+
+    // Event system
+    on(event, callback) {
+        if (!this.eventListeners[event]) {
+            this.eventListeners[event] = [];
+        }
+        this.eventListeners[event].push(callback);
+        return this; // Allow method chaining
+    }
+
+    emit(event, data) {
+        if (this.eventListeners[event]) {
+            this.eventListeners[event].forEach(callback => callback(data));
+        }
     }
 
     // Load story from data object
@@ -15,9 +31,10 @@ class StoryEngine {
 
         // Set story data
         this.storyData = data;
+        this.emit('storyLoaded', this.storyData);
 
         // Load the first passage (usually named "Start")
-        let startPassage = this.storyData.passages.find(p => p.name === "Start");
+        let startPassage = this.getPassage("Start");
 
         // If no passage named "Start", use the first passage
         if (!startPassage && this.storyData.passages.length > 0) {
@@ -25,6 +42,7 @@ class StoryEngine {
         }
 
         if (startPassage) {
+            this.navigateToPassage(startPassage.name);
             return startPassage;
         } else {
             throw new Error('No passages found in the story.');
@@ -33,12 +51,46 @@ class StoryEngine {
 
     // Get passage by name
     getPassage(passageName) {
-        return this.storyData.passages.find(p => p.name === passageName);
+        return this.storyData?.passages.find(p => p.name === passageName);
+    }
+
+    // Navigate to a specific passage
+    navigateToPassage(passageName) {
+        const targetPassage = this.getPassage(passageName);
+
+        if (!targetPassage) {
+            this.emit('error', `Passage "${passageName}" not found!`);
+            return false;
+        }
+
+        this.currentPassage = targetPassage;
+        this.emit('passageChanged', targetPassage);
+        return true;
+    }
+
+    // Handle choice selection
+    makeChoice(targetPassageName) {
+        return this.navigateToPassage(targetPassageName);
+    }
+
+    // Reset to start passage
+    resetToStart() {
+        if (!this.storyData) {
+            this.emit('error', 'No story loaded to reset.');
+            return false;
+        }
+
+        return this.navigateToPassage("Start");
     }
 
     // Get story title
     getStoryTitle() {
         return this.storyData ? this.storyData.story_name : '';
+    }
+
+    // Get story data for sharing
+    getStoryData() {
+        return this.storyData;
     }
 
     // Sample story data

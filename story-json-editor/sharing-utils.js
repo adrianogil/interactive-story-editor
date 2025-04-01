@@ -51,17 +51,33 @@ class SharingUtils {
         return null;
     }
 
-    // Copy text to clipboard
-    static copyToClipboard(text, callback) {
-        const tempInput = document.createElement('textarea');
-        tempInput.value = text;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
+    // Copy text to clipboard (using modern Clipboard API with fallback)
+    static async copyToClipboard(text, callback) {
+        try {
+            // Try to use modern Clipboard API first
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+                return true;
+            }
 
-        if (callback && typeof callback === 'function') {
-            callback();
+            // Fallback to older method
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            const success = document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            if (callback && typeof callback === 'function') {
+                callback();
+            }
+            return success;
+        } catch (error) {
+            console.error('Failed to copy text:', error);
+            return false;
         }
     }
 }
