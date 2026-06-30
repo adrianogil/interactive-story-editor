@@ -8,6 +8,8 @@ collaboration or demos.
 
 - **JSON-powered story editor** with a built-in sample story.
 - **Branching passage navigation** with clickable choice buttons.
+- **Visual story map** with clickable passages, labeled branches, zoom, pan,
+  current/visited state, and structural diagnostics.
 - **Story reset** to restart from the beginning.
 - **Shareable URLs** that embed story data in the query string.
 - **Collapsible editor panel** to focus on the story playback.
@@ -60,5 +62,7 @@ Each story includes a name and an array of passages. Each passage has a `name` a
 - `story-json-editor/storyeditor.css`: Styles for the editor and story view.
 - `story-json-editor/main.js`: App bootstrap and sample story data.
 - `story-json-editor/story-engine.js`: Story loading, navigation, and history.
+- `story-json-editor/story-graph.js`: SVG graph layout, rendering, diagnostics,
+  and graph interactions.
 - `story-json-editor/ui-controller.js`: UI rendering and interactions.
 - `story-json-editor/sharing-utils.js`: Shareable URL and clipboard helpers.

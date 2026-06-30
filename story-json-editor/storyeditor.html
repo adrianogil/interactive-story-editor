@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Story Player</title>
-    <link rel="stylesheet" href="storyeditor.css">
+    <link rel="stylesheet" href="storyeditor.css?v=2">
 
-    <script src="sharing-utils.js"></script>
-    <script src="story-engine.js"></script>
-    <script src="ui-controller.js"></script>
-    <script src="main.js"></script>
+    <script src="sharing-utils.js?v=2"></script>
+    <script src="story-engine.js?v=2"></script>
+    <script src="story-graph.js?v=2"></script>
+    <script src="ui-controller.js?v=2"></script>
+    <script src="main.js?v=2"></script>
 </head>
 <body>
     <h1>Interactive Story Player</h1>
@@ -50,6 +51,36 @@
                 <input type="text" id="share-url" readonly>
                 <button id="copy-url-button">Copy</button>
             </div>
+
+            <section id="story-graph-section" aria-labelledby="story-graph-title">
+                <div class="story-graph-header">
+                    <div>
+                        <h2 id="story-graph-title">Story Map</h2>
+                        <p id="story-graph-status" aria-live="polite"></p>
+                    </div>
+                    <div class="story-graph-controls" aria-label="Story map controls">
+                        <button id="graph-zoom-out" type="button" title="Zoom out">−</button>
+                        <button id="graph-zoom-in" type="button" title="Zoom in">+</button>
+                        <button id="graph-fit" type="button">Fit</button>
+                    </div>
+                </div>
+                <div class="story-graph-legend" aria-label="Story map legend">
+                    <span class="legend-current">Current</span>
+                    <span class="legend-visited">Visited</span>
+                    <span class="legend-unreachable">Unreachable</span>
+                    <span class="legend-broken">Broken link</span>
+                </div>
+                <div id="story-graph-viewport">
+                    <svg
+                        id="story-graph"
+                        role="img"
+                        aria-label="Passages and branches in the loaded story"
+                    ></svg>
+                </div>
+                <p class="story-graph-help">
+                    Click a passage to navigate. Drag the background to pan.
+                </p>
+            </section>
         </div>
     </div>
 </body>

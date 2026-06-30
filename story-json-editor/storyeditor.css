@@ -293,3 +293,223 @@ h1 {
     background-color: #7c4dff;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
+
+#story-graph-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.story-graph-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.story-graph-header h2 {
+    margin: 0;
+}
+
+#story-graph-status {
+    margin: 4px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.story-graph-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.story-graph-controls button {
+    min-width: 38px;
+    min-height: 38px;
+    padding: 6px 10px;
+    border: 1px solid #d2c5e8;
+    border-radius: 6px;
+    background: white;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.story-graph-controls button:hover,
+.story-graph-controls button:focus-visible {
+    background: #f1eaff;
+    border-color: var(--primary-color);
+}
+
+.story-graph-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin: 14px 0 10px;
+    color: #555;
+    font-size: 12px;
+}
+
+.story-graph-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.story-graph-legend span::before {
+    width: 10px;
+    height: 10px;
+    border: 2px solid #888;
+    border-radius: 3px;
+    content: '';
+}
+
+.story-graph-legend .legend-current::before {
+    border-color: var(--primary-color);
+    background: #ede2ff;
+}
+
+.story-graph-legend .legend-visited::before {
+    border-color: #02776c;
+    background: #d7faf6;
+}
+
+.story-graph-legend .legend-unreachable::before {
+    border-color: #c56a00;
+    background: #fff0d8;
+}
+
+.story-graph-legend .legend-broken::before {
+    border-color: #c62828;
+    background: #ffe4e4;
+}
+
+#story-graph-viewport {
+    width: 100%;
+    height: 480px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    background-color: #fbfbfd;
+    background-image:
+        linear-gradient(#ececf2 1px, transparent 1px),
+        linear-gradient(90deg, #ececf2 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+#story-graph {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+#story-graph.is-panning {
+    cursor: grabbing;
+}
+
+.story-graph-edge path {
+    fill: none;
+    stroke: #8b83a0;
+    stroke-width: 2;
+}
+
+#story-graph-arrow path {
+    fill: #8b83a0;
+}
+
+.story-graph-edge-label {
+    fill: #5f586f;
+    paint-order: stroke;
+    stroke: #fbfbfd;
+    stroke-width: 5px;
+    stroke-linejoin: round;
+    font-size: 11px;
+}
+
+.story-graph-node {
+    cursor: pointer;
+    outline: none;
+}
+
+.story-graph-node rect {
+    fill: white;
+    stroke: #7a7485;
+    stroke-width: 2;
+    transition: fill 0.15s, stroke 0.15s, stroke-width 0.15s;
+}
+
+.story-graph-node:hover rect,
+.story-graph-node:focus-visible rect {
+    fill: #f1eaff;
+    stroke: var(--primary-color);
+    stroke-width: 3;
+}
+
+.story-graph-node.is-start rect {
+    stroke: #188038;
+}
+
+.story-graph-node.is-visited rect {
+    fill: #d7faf6;
+    stroke: #02776c;
+}
+
+.story-graph-node.is-unreachable rect {
+    fill: #fff0d8;
+    stroke: #c56a00;
+    stroke-dasharray: 6 4;
+}
+
+.story-graph-node.is-broken {
+    cursor: not-allowed;
+}
+
+.story-graph-node.is-broken rect {
+    fill: #ffe4e4;
+    stroke: #c62828;
+    stroke-dasharray: 6 4;
+}
+
+.story-graph-node.is-current rect {
+    fill: #ede2ff;
+    stroke: var(--primary-color);
+    stroke-width: 4;
+    stroke-dasharray: none;
+}
+
+.story-graph-node-label {
+    fill: #2f2b35;
+    font-size: 14px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.story-graph-node-status {
+    fill: #6f6878;
+    font-size: 11px;
+    pointer-events: none;
+}
+
+.story-graph-help {
+    margin: 8px 0 0;
+    color: #777;
+    font-size: 12px;
+}
+
+@media (max-width: 600px) {
+    .story-graph-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .story-graph-controls button {
+        flex: 1;
+    }
+
+    #story-graph-viewport {
+        height: 380px;
+    }
+}

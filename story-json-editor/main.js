@@ -11,6 +11,7 @@ class StoryApp {
         // Core components
         this.storyEngine = new StoryEngine();
         this.uiController = null;
+        this.storyGraph = null;
         this.initialized = false;
     }
 
@@ -22,6 +23,13 @@ class StoryApp {
 
         // Initialize UI controller with DOM elements
         this.uiController = new UIController(elements, this.storyEngine);
+        this.storyGraph = new StoryGraph({
+            svg: elements.storyGraph,
+            status: elements.storyGraphStatus,
+            zoomInButton: elements.graphZoomInButton,
+            zoomOutButton: elements.graphZoomOutButton,
+            fitButton: elements.graphFitButton
+        }, this.storyEngine);
 
         // Set up event listeners for StoryEngine events
         this.setupEventListeners();
@@ -50,15 +58,25 @@ class StoryApp {
             shareUrlContainer: document.getElementById('share-url-container'),
             shareUrl: document.getElementById('share-url'),
             copyUrlButton: document.getElementById('copy-url-button'),
-            resetButton: document.getElementById('reset-button')
+            resetButton: document.getElementById('reset-button'),
+            storyGraph: document.getElementById('story-graph'),
+            storyGraphStatus: document.getElementById('story-graph-status'),
+            graphZoomInButton: document.getElementById('graph-zoom-in'),
+            graphZoomOutButton: document.getElementById('graph-zoom-out'),
+            graphFitButton: document.getElementById('graph-fit')
         };
     }
 
     setupEventListeners() {
         this.storyEngine
-            .on('passageChanged', passage => this.uiController.renderPassage(passage))
+            .on('passageChanged', passage => {
+                this.uiController.renderPassage(passage);
+                this.storyGraph.setCurrentPassage(passage.name);
+            })
             .on('error', errorMessage => this.uiController.showError(errorMessage))
             .on('storyLoaded', () => {
+                this.storyGraph.render(this.storyEngine.getStoryData());
+
                 // Hide error message
                 this.uiController.hideError();
 
@@ -250,4 +268,3 @@ class StoryApp {
         };
     }
 }
-
