@@ -138,9 +138,12 @@ class StoryGraph {
             });
         });
 
-        const startName = passageNodes.has('Start')
-            ? 'Start'
-            : storyData.passages[0].name;
+        const startName = (
+            typeof storyData.start_passage === 'string' &&
+            passageNodes.has(storyData.start_passage)
+        )
+            ? storyData.start_passage
+            : (passageNodes.has('Start') ? 'Start' : storyData.passages[0].name);
         const reachable = this.findReachablePassages(startName, edges, passageNodes);
 
         passageNodes.forEach(node => {
@@ -282,7 +285,7 @@ class StoryGraph {
 
     createNode(node, position) {
         const classes = ['story-graph-node'];
-        if (node.id === 'Start') classes.push('is-start');
+        if (node.id === this.storyEngine.getStartPassageName()) classes.push('is-start');
         if (node.unreachable) classes.push('is-unreachable');
         if (node.broken) classes.push('is-broken');
 

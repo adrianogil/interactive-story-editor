@@ -20,6 +20,9 @@ class UIController {
         // Share button
         this.elements.shareButton.addEventListener('click', () => this.handleShareClick());
 
+        // Twine HTML export button
+        this.elements.exportButton.addEventListener('click', () => this.handleExportClick());
+
         // Copy URL button
         this.elements.copyUrlButton.addEventListener('click', () => this.handleCopyUrlClick());
 
@@ -59,10 +62,11 @@ class UIController {
     }
 
     // Display error message
-    showError(message) {
+    showError(message, options = {}) {
+        const hideStory = options.hideStory !== false;
         this.elements.errorMessage.textContent = message;
         this.elements.errorMessage.style.display = 'block';
-        this.elements.storyContainer.style.display = 'none';
+        if (hideStory) this.elements.storyContainer.style.display = 'none';
 
         // Expand input section to show the error
         this.elements.inputSection.classList.remove('collapsed');
@@ -148,6 +152,20 @@ class UIController {
 
             // Select the URL text for easy copying
             this.elements.shareUrl.select();
+        }
+    }
+
+    // Export the JSON currently in the editor as a self-contained Twine HTML file
+    handleExportClick() {
+        try {
+            const storyData = JSON.parse(this.elements.jsonInput.value);
+            TwineExporter.downloadStory(storyData);
+            this.hideError();
+        } catch (error) {
+            this.showError(
+                error.message || 'Unable to export this story to Twine HTML.',
+                { hideStory: false }
+            );
         }
     }
 

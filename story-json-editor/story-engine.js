@@ -35,13 +35,8 @@ class StoryEngine {
         this.history = []; // Reset history when loading a new story
         this.emit('storyLoaded', this.storyData);
 
-        // Load the first passage (usually named "Start")
-        let startPassage = this.getPassage("Start");
-
-        // If no passage named "Start", use the first passage
-        if (!startPassage && this.storyData.passages.length > 0) {
-            startPassage = this.storyData.passages[0];
-        }
+        // Honor an explicit start passage, retaining the existing Start/first fallback.
+        const startPassage = this.getPassage(this.getStartPassageName());
 
         if (startPassage) {
             this.navigateToPassage(startPassage.name);
@@ -122,7 +117,17 @@ class StoryEngine {
 
         // Clear history when resetting
         this.history = [];
-        return this.navigateToPassage("Start");
+        return this.navigateToPassage(this.getStartPassageName());
+    }
+
+    // Resolve the story start using the same order as Twine export.
+    getStartPassageName() {
+        if (!this.storyData || !Array.isArray(this.storyData.passages)) return null;
+        if (typeof this.storyData.start_passage === 'string' && this.storyData.start_passage) {
+            return this.storyData.start_passage;
+        }
+        if (this.getPassage('Start')) return 'Start';
+        return this.storyData.passages.length > 0 ? this.storyData.passages[0].name : null;
     }
 
     // Get story title
@@ -139,4 +144,8 @@ class StoryEngine {
     getCurrentPassage() {
         return this.currentPassage;
     }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = StoryEngine;
 }

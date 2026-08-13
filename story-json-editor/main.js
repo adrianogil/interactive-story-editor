@@ -55,6 +55,7 @@ class StoryApp {
             storyContent: document.getElementById('story-content'),
             choicesContainer: document.getElementById('choices-container'),
             shareButton: document.getElementById('share-button'),
+            exportButton: document.getElementById('export-button'),
             shareUrlContainer: document.getElementById('share-url-container'),
             shareUrl: document.getElementById('share-url'),
             copyUrlButton: document.getElementById('copy-url-button'),

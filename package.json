@@ -1,0 +1,10 @@
+{
+  "name": "interactive-story-editor",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "check:syntax": "node --check story-json-editor/sharing-utils.js && node --check story-json-editor/story-engine.js && node --check story-json-editor/story-graph.js && node --check story-json-editor/twine-exporter.js && node --check story-json-editor/ui-controller.js && node --check story-json-editor/main.js",
+    "check": "npm run check:syntax && npm test"
+  }
+}
